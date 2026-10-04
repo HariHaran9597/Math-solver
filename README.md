@@ -1,7 +1,6 @@
 # 🧮 AI Math Solver (Fine-Tuned Qwen2.5-1.5B)
 
-![Status](https://img.shields.io/badge/Status-Live-success)
-![Accuracy](https://img.shields.io/badge/Accuracy-82%25-brightgreen)
+![Status](https://img.shields.io/badge/Status-Research%20prototype-blue)
 ![Model](https://img.shields.io/badge/Model-Qwen2.5--1.5B-blue)
 ![Tech](https://img.shields.io/badge/Tech-Unsloth%20%7C%20LoRA-orange)
 
@@ -16,21 +15,23 @@ It also features an inference-time **Smart Mode** using Majority Voting (Self-Co
 
 | Platform | Type | Speed | Link |
 |---------|------|--------|------|
-| **Hugging Face** | Web App | Slow (CPU) | [➡️ Try the Chat App](https://huggingface.co/spaces/justhariharn/Math-Solver-Portfolio) |
+| **Hugging Face** | Web App (may sleep when idle) | CPU | [➡️ Try the Chat App](https://huggingface.co/spaces/justhariharan/Math-Solver) |
 | **Google Colab** | Notebook | **Fast (GPU)** | [➡️ Run on Free GPU](https://colab.research.google.com/github/HariHaran9597/Math-solver/blob/main/Try_Math_Solver.ipynb) |
 
 ---
 
 ## 📊 Performance & Metrics
 
-Pipeline engineered to push the limits of a tiny 1.5B model.  
-Using **Self-Consistency (Majority Voting)** yields performance comparable to much larger models.
+These are previously reported sample results. The repository does not currently provide
+the sample size, per-question predictions, or a versioned evaluation report sufficient to
+reproduce these percentages. Treat them as provisional, not as full GSM8K test-set scores
+or evidence of equivalence to larger models. The training dataset size is not the evaluation denominator.
 
 | Method | Accuracy (GSM8K Sample) | Notes |
 |--------|--------------------------|-------|
 | **Base Model (Zero-Shot)** | ~45% | Struggled with formatting & reasoning consistency. |
 | **Fine-Tuned (Greedy)** | 70% | Stable step-by-step logic, fewer hallucinations. |
-| **Fine-Tuned + Voting** | **82%** 🏆 | Production mode; generates 3 answers and votes. |
+| **Fine-Tuned + Voting** | **82%** | Experimental mode; generates 3 answers and votes. |
 
 ---
 
@@ -71,11 +72,11 @@ During inference:
 ### **1. Install Dependencies**
 
 ```bash
-pip install torch transformers accelerate peft unsloth
+pip install torch transformers accelerate peft
 
 ```
 ## Python Inference Script
-```bash
+```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
@@ -94,7 +95,7 @@ def solve(question):
         {"role": "user", "content": question}
     ]
     text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-    inputs = tokenizer([text], return_tensors="pt").to("cuda")
+    inputs = tokenizer([text], return_tensors="pt").to(model.device)
     
     outputs = model.generate(**inputs, max_new_tokens=512)
     return tokenizer.decode(outputs[0], skip_special_tokens=True)
@@ -104,12 +105,14 @@ print(solve("If I have 30 apples and eat 2, how many do I have left?"))
 ```
 ## Project Structure
 ```bash
-├── app.py                     # Gradio app (UI + inference logic)
-├── requirements.txt           # Dependencies for deployment
-├── Try_Math_Solver.ipynb      # Clean inference notebook for users
-└── Math_Solver_Training.ipynb # Full Unsloth + LoRA training pipeline
+├── README.md
+├── Try_Math_Solver.ipynb       # Inference notebook
+└── MATH_agent.ipynb            # Training / exploration notebook
 ```
-###🔮 Future Improvements
+
+The hosted application's files live in the [Hugging Face Space repository](https://huggingface.co/spaces/justhariharan/Math-Solver/tree/main), separately from these notebooks.
+
+### 🔮 Future Improvements
 
 RAG Integration: Query textbook examples for hard problems
 Vision Support: Use Qwen-VL to solve image-based math questions
