@@ -1,13 +1,13 @@
 # 🧮 AI Math Solver (Fine-Tuned Qwen2.5-1.5B)
 
-![Status](https://img.shields.io/badge/Status-Research%20prototype-blue)
+![Status](https://img.shields.io/badge/Status-Public%20research%20demo-blue)
 ![Model](https://img.shields.io/badge/Model-Qwen2.5--1.5B-blue)
 ![Tech](https://img.shields.io/badge/Tech-Unsloth%20%7C%20LoRA-orange)
 
 A specialized **Small Language Model (SLM)** pipeline capable of solving grade-school math word problems with step-by-step reasoning.  
 Trained by fine-tuning **Qwen2.5-Math-1.5B** on the **GSM8K** dataset using **Unsloth** + **QLoRA**.
 
-It also features an inference-time **Smart Mode** using Majority Voting (Self-Consistency), boosting accuracy significantly without additional training.
+It also includes an experimental inference-time mode that compares three sampled answers and selects the most common explicitly marked final result. Agreement can still be wrong.
 
 ---
 
@@ -22,16 +22,11 @@ It also features an inference-time **Smart Mode** using Majority Voting (Self-Co
 
 ## 📊 Performance & Metrics
 
-These are previously reported sample results. The repository does not currently provide
-the sample size, per-question predictions, or a versioned evaluation report sufficient to
-reproduce these percentages. Treat them as provisional, not as full GSM8K test-set scores
-or evidence of equivalence to larger models. The training dataset size is not the evaluation denominator.
-
-| Method | Accuracy (GSM8K Sample) | Notes |
-|--------|--------------------------|-------|
-| **Base Model (Zero-Shot)** | ~45% | Struggled with formatting & reasoning consistency. |
-| **Fine-Tuned (Greedy)** | 70% | Stable step-by-step logic, fewer hallucinations. |
-| **Fine-Tuned + Voting** | **82%** | Experimental mode; generates 3 answers and votes. |
+The repository does not currently include a versioned evaluation set with per-question
+predictions sufficient to reproduce an accuracy percentage. No numerical accuracy claim is
+made here. Training used GSM8K; this is not evidence of performance on the full GSM8K test set
+or equivalence to larger models. Self-consistency compares three sampled outputs and selects
+the most common explicitly marked final answer. Agreement is not a correctness guarantee.
 
 ---
 
@@ -55,15 +50,14 @@ Model is instructed to *teach* instead of just outputting the answer.
 
 ---
 
-### **2. Smart Mode (Self-Consistency Voting)**  
+### **2. Three-attempt comparison (experimental)**
 During inference:
 
 - **Standard Mode:** 1 answer (fast)  
-- **Smart Mode:**  
-  - Generates **3 different reasoning paths** (temp=0.8)  
-  - Extracts final answers  
-  - Performs **Majority Vote**  
-  - Output becomes far more reliable  
+- **Comparison mode:** generates up to **3 reasoning attempts** (temperature=0.8), extracts
+  only answers marked with `####`, and returns the most common marked answer. If no attempt
+  provides a marked answer, the app says so instead of guessing from an arbitrary number in
+  the reasoning. This mode is slower and can still be wrong.
 
 ---
 
@@ -103,6 +97,7 @@ def solve(question):
 print(solve("If I have 30 apples and eat 2, how many do I have left?"))
 
 ```
+
 ## Project Structure
 ```bash
 ├── README.md
